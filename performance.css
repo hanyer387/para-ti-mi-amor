@@ -1,0 +1,18 @@
+/* Only the camera transform changes during a drag; no inherited angle variables. */
+.gift{--camera-lift:32px;will-change:transform}
+.gift.opened{--camera-lift:80px}
+.gift.manual-view,.gift.dragging{transition:none!important}
+/* Fixed soft gradients replace filtered surfaces in the rotating scene. */
+.scene:before{filter:none;background:radial-gradient(ellipse,#fff7,transparent 68%)}
+.scene:after{filter:none;background:radial-gradient(ellipse,#9b456b30,transparent 70%)}
+.contact-shadow{filter:none;background:radial-gradient(ellipse,#723e5d55,transparent 72%)}
+.present:before{filter:none;background:radial-gradient(ellipse,#79546b40,transparent 72%)}
+.bow3d{filter:none}
+.toy-front,.toy-side-back,.toy-side-middle,.heart-model b{filter:none}
+.toy-side-back{opacity:.65}.toy-side-middle{opacity:.85}
+.scene.interacting .present:focus-visible{outline:none}
+@media(max-width:650px){.gift{--camera-lift:28px}.gift.opened{--camera-lift:80px}
+ dialog::backdrop{backdrop-filter:none}
+ .heart{text-shadow:none}
+}
+@media(max-width:650px) and (max-height:720px){.gift.opened{--camera-lift:75px}}

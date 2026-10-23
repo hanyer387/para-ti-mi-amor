@@ -11,7 +11,7 @@ regalo.tarjetas.forEach((item, i) => {
   const inner = document.createElement('span'); inner.className = 'card-inner';
   const front = document.createElement('span'); front.className = 'card-front';
   const number = document.createElement('span'); number.className = 'card-number'; number.textContent = `0${i + 1} / PARA TI`;
-  const art = document.createElement('span'); art.className = 'card-art'; art.textContent = item.simbolo; if (i === 0 || i === 5) { const kitty = document.createElement('img'); kitty.src = 'kitty.png'; kitty.alt = ''; art.replaceChildren(kitty); } art.setAttribute('aria-hidden', 'true');
+  const art = document.createElement('span'); art.className = 'card-art'; art.textContent = item.simbolo; if (i === 0 || i === 5) { const kitty = document.createElement('img'); kitty.src = 'kitty-small.webp'; kitty.alt = ''; art.replaceChildren(kitty); } art.setAttribute('aria-hidden', 'true');
   if (item.foto) { const img = document.createElement('img'); img.src = item.foto; img.alt = item.titulo; art.replaceChildren(img); art.classList.add('with-photo'); }
   const title = document.createElement('strong'); title.textContent = item.titulo;
   const detail = document.createElement('span'); detail.className = 'card-detail'; detail.textContent = item.detalle;
@@ -28,7 +28,14 @@ regalo.tarjetas.forEach((item, i) => {
   $('#cards').append(card);
 });
 regalo.carta.forEach(text => { const p = document.createElement('p'); p.textContent = text; $('#letter-body').append(p); });
+const particles = $('#particles');
+const compactEffects = matchMedia('(pointer: coarse), (max-width: 650px)').matches;
+function clearParticles() { particles.replaceChildren(); }
 function hearts(count = 30) {
+  if (scene?.classList.contains('interacting')) return;
+  count = Math.min(count, compactEffects ? 12 : 30);
+  const remaining = (compactEffects ? 18 : 45) - particles.childElementCount;
+  count = Math.max(0, Math.min(count, remaining));
   if (reduced) { $('#particles').textContent = '♡'; setTimeout(() => $('#particles').textContent = '', 1500); return; }
   for (let i = 0; i < count; i++) {
     const h = document.createElement('span'); h.className = 'heart'; h.textContent = ['♡', '♥', '✧'][i % 3];
@@ -42,11 +49,11 @@ let transitionTimer, revealTimer, turning = false, suppressClickUntil = 0;
 const scene = $('#scene'), gift = $('#gift');
 function setView(x, y) {
   viewX = Math.max(-70, Math.min(-18, x)); viewY = Math.max(-55, Math.min(55, y));
-  gift.style.setProperty('--view-x', `${viewX}deg`); gift.style.setProperty('--view-y', `${viewY}deg`);
+  gift.style.transform = `translateY(var(--camera-lift)) rotateX(${viewX}deg) rotateY(${viewY}deg)`;
 }
 function openGift() {
   if (opening || turning) return;
-  opening = true; turning = true; gift.classList.add('opened');
+  opening = true; turning = true; gift.classList.remove('manual-view'); gift.classList.add('opened');
   $('#lid').setAttribute('aria-expanded', 'true'); $('#lid').setAttribute('aria-label', 'Cerrar la tapa de la caja');
   $('#hint').textContent = 'Abriendo tu cajita, mi amor…';
   // Primero se levanta la tapa; luego la vista descubre el interior.
@@ -60,7 +67,7 @@ function openGift() {
 }
 function closeGift() {
   if (turning) return;
-  opening = false; gift.classList.remove('opened'); $('#floor-items').inert = true;
+  opening = false; gift.classList.remove('manual-view', 'opened'); $('#floor-items').inert = true;
   $('#lid').setAttribute('aria-expanded', 'false'); $('#lid').setAttribute('aria-label', 'Abrir la tapa de la caja');
   setView(-22,-26); $('#hint').textContent = 'Toca la tapa, mi amor. Hay algo bonito dentro.';
 }
@@ -76,31 +83,47 @@ gift.onkeydown = e => {
   const moves = {ArrowLeft:[0,-10],ArrowRight:[0,10],ArrowUp:[-8,0],ArrowDown:[8,0]};
   if(moves[e.key]) { e.preventDefault(); const [x,y]=moves[e.key]; setView(viewX+x,viewY+y); }
 };
-let gesture;
+let gesture, dragFrame = 0, pendingView;
+function flushDrag() {
+  dragFrame = 0;
+  if (!pendingView) return;
+  const { x, y } = pendingView; pendingView = null; setView(x, y);
+}
+function endGesture(e) {
+  if(!gesture || gesture.id !== e.pointerId) return;
+  if(gesture.moved) {
+    suppressClickUntil=performance.now()+400;
+    if(dragFrame) cancelAnimationFrame(dragFrame);
+    flushDrag();
+  }
+  gesture=null; gift.classList.remove('dragging'); scene.classList.remove('interacting');
+  // manual-view stays: releasing must never restart the camera transition.
+  if(scene.hasPointerCapture(e.pointerId)) scene.releasePointerCapture(e.pointerId);
+}
 scene.addEventListener('pointerdown', e => {
-  if(e.button !== 0 || turning) return;
-  if(gesture) return;
+  if(e.button !== 0 || turning || gesture) return;
   gesture = { id:e.pointerId, x:e.clientX, y:e.clientY, viewX, viewY, moved:false };
 });
 scene.addEventListener('pointermove', e => {
   if(!gesture || gesture.id !== e.pointerId) return;
   const dx=e.clientX-gesture.x, dy=e.clientY-gesture.y;
   if(!gesture.moved && Math.hypot(dx,dy)>9) {
-    gesture.moved=true; scene.setPointerCapture(e.pointerId); gift.classList.add('dragging');
+    gesture.moved=true; scene.setPointerCapture(e.pointerId);
+    gift.classList.add('dragging','manual-view'); scene.classList.add('interacting'); clearParticles();
   }
-  if(gesture.moved) { e.preventDefault(); setView(gesture.viewX-dy*.3,gesture.viewY+dx*.35); }
-});
-function endGesture(e) {
-  if(!gesture || gesture.id !== e.pointerId) return;
-  if(gesture.moved) suppressClickUntil=performance.now()+400;
-  gesture=null; gift.classList.remove('dragging');
-  if(scene.hasPointerCapture(e.pointerId)) scene.releasePointerCapture(e.pointerId);
-}
+  if(gesture.moved) {
+    pendingView = {x:gesture.viewX-dy*.3,y:gesture.viewY+dx*.35};
+    if(!dragFrame) dragFrame=requestAnimationFrame(flushDrag);
+  }
+}, {passive:true});
 scene.addEventListener('pointerup', endGesture);
 scene.addEventListener('pointercancel', endGesture);
-scene.addEventListener('lostpointercapture', () => { gesture=null; gift.classList.remove('dragging'); });
+scene.addEventListener('lostpointercapture', endGesture);
 scene.addEventListener('click', e => { if(performance.now()<suppressClickUntil) { e.preventDefault(); e.stopImmediatePropagation(); } },true);
 scene.addEventListener('dragstart', e=>e.preventDefault());
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden) { if(gesture) endGesture({pointerId:gesture.id}); clearParticles(); }
+});
 const focusBeforeDialog = new Map();
 function showSurprise(name) {
   if(name === 'hearts') { hearts(40); $('#hint').textContent = 'Te quiero 3.000.000, mi amor ♡'; return; }
