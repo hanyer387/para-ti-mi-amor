@@ -1,0 +1,141 @@
+const $ = s => document.querySelector(s);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let opening = false;
+
+const discovered = new Set();
+regalo.tarjetas.forEach((item, i) => {
+  const card = document.createElement('button');
+  card.className = `card ${item.color}`;
+  card.setAttribute('aria-pressed', 'false');
+  card.setAttribute('aria-label', `Descubrir: ${item.titulo}`);
+  const inner = document.createElement('span'); inner.className = 'card-inner';
+  const front = document.createElement('span'); front.className = 'card-front';
+  const number = document.createElement('span'); number.className = 'card-number'; number.textContent = `0${i + 1} / PARA TI`;
+  const art = document.createElement('span'); art.className = 'card-art'; art.textContent = item.simbolo; if (i === 0 || i === 5) { const kitty = document.createElement('img'); kitty.src = 'kitty.png'; kitty.alt = ''; art.replaceChildren(kitty); } art.setAttribute('aria-hidden', 'true');
+  if (item.foto) { const img = document.createElement('img'); img.src = item.foto; img.alt = item.titulo; art.replaceChildren(img); art.classList.add('with-photo'); }
+  const title = document.createElement('strong'); title.textContent = item.titulo;
+  const detail = document.createElement('span'); detail.className = 'card-detail'; detail.textContent = item.detalle;
+  const back = document.createElement('span'); back.className = 'card-back'; back.textContent = item.mensaje; back.setAttribute('aria-hidden', 'true');
+  front.append(number, art, title, detail); inner.append(front, back); card.append(inner);
+  card.addEventListener('click', () => {
+    const flipped = card.classList.toggle('flipped');
+    card.setAttribute('aria-pressed', String(flipped));
+    front.setAttribute('aria-hidden', String(flipped)); back.setAttribute('aria-hidden', String(!flipped));
+    card.setAttribute('aria-label', flipped ? `${item.titulo}: ${item.mensaje}. Toca para volver.` : `Descubrir: ${item.titulo}`);
+    discovered.add(i); $('#progress').textContent = discovered.size === 6 ? 'Las seis sorpresas, para ti ♡' : `${discovered.size} de 6 sorpresas descubiertas`;
+    if (flipped && discovered.size === 6) hearts(18);
+  });
+  $('#cards').append(card);
+});
+regalo.carta.forEach(text => { const p = document.createElement('p'); p.textContent = text; $('#letter-body').append(p); });
+function hearts(count = 30) {
+  if (reduced) { $('#particles').textContent = '♡'; setTimeout(() => $('#particles').textContent = '', 1500); return; }
+  for (let i = 0; i < count; i++) {
+    const h = document.createElement('span'); h.className = 'heart'; h.textContent = ['♡', '♥', '✧'][i % 3];
+    h.style.left = `${Math.random() * 100}%`; h.style.setProperty('--drift', `${Math.random() * 160 - 80}px`); h.style.fontSize = `${14 + Math.random() * 24}px`; h.style.animationDelay = `${Math.random() * .8}s`;
+    $('#particles').append(h); setTimeout(() => h.remove(), 5500);
+  }
+}
+
+let viewX = -22, viewY = -26;
+let transitionTimer, revealTimer, turning = false, suppressClickUntil = 0;
+const scene = $('#scene'), gift = $('#gift');
+function setView(x, y) {
+  viewX = Math.max(-70, Math.min(-18, x)); viewY = Math.max(-55, Math.min(55, y));
+  gift.style.setProperty('--view-x', `${viewX}deg`); gift.style.setProperty('--view-y', `${viewY}deg`);
+}
+function openGift() {
+  if (opening || turning) return;
+  opening = true; turning = true; gift.classList.add('opened');
+  $('#lid').setAttribute('aria-expanded', 'true'); $('#lid').setAttribute('aria-label', 'Cerrar la tapa de la caja');
+  $('#hint').textContent = 'Abriendo tu cajita, mi amor…';
+  // Primero se levanta la tapa; luego la vista descubre el interior.
+  clearTimeout(revealTimer);
+  revealTimer = setTimeout(() => { setView(-49, -12); hearts(18); }, reduced ? 0 : 650);
+  clearTimeout(transitionTimer);
+  transitionTimer = setTimeout(() => {
+    turning = false; $('#floor-items').inert = false;
+    $('#hint').textContent = 'Toca cada regalito para descubrirlo. La tapa se cierra con otro toque.';
+  }, reduced ? 0 : 2200);
+}
+function closeGift() {
+  if (turning) return;
+  opening = false; gift.classList.remove('opened'); $('#floor-items').inert = true;
+  $('#lid').setAttribute('aria-expanded', 'false'); $('#lid').setAttribute('aria-label', 'Abrir la tapa de la caja');
+  setView(-22,-26); $('#hint').textContent = 'Toca la tapa, mi amor. Hay algo bonito dentro.';
+}
+function toggleGift() { opening ? closeGift() : openGift(); }
+gift.addEventListener('click', e => {
+  if (performance.now() < suppressClickUntil) return;
+  if (e.target.closest('[data-surprise]')) return;
+  if (!opening || e.target.closest('#lid')) toggleGift();
+});
+gift.onkeydown = e => {
+  if (e.target !== gift && e.target !== $('#lid')) return;
+  if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleGift(); }
+  const moves = {ArrowLeft:[0,-10],ArrowRight:[0,10],ArrowUp:[-8,0],ArrowDown:[8,0]};
+  if(moves[e.key]) { e.preventDefault(); const [x,y]=moves[e.key]; setView(viewX+x,viewY+y); }
+};
+let gesture;
+scene.addEventListener('pointerdown', e => {
+  if(e.button !== 0 || turning) return;
+  if(gesture) return;
+  gesture = { id:e.pointerId, x:e.clientX, y:e.clientY, viewX, viewY, moved:false };
+});
+scene.addEventListener('pointermove', e => {
+  if(!gesture || gesture.id !== e.pointerId) return;
+  const dx=e.clientX-gesture.x, dy=e.clientY-gesture.y;
+  if(!gesture.moved && Math.hypot(dx,dy)>9) {
+    gesture.moved=true; scene.setPointerCapture(e.pointerId); gift.classList.add('dragging');
+  }
+  if(gesture.moved) { e.preventDefault(); setView(gesture.viewX-dy*.3,gesture.viewY+dx*.35); }
+});
+function endGesture(e) {
+  if(!gesture || gesture.id !== e.pointerId) return;
+  if(gesture.moved) suppressClickUntil=performance.now()+400;
+  gesture=null; gift.classList.remove('dragging');
+  if(scene.hasPointerCapture(e.pointerId)) scene.releasePointerCapture(e.pointerId);
+}
+scene.addEventListener('pointerup', endGesture);
+scene.addEventListener('pointercancel', endGesture);
+scene.addEventListener('lostpointercapture', () => { gesture=null; gift.classList.remove('dragging'); });
+scene.addEventListener('click', e => { if(performance.now()<suppressClickUntil) { e.preventDefault(); e.stopImmediatePropagation(); } },true);
+scene.addEventListener('dragstart', e=>e.preventDefault());
+const focusBeforeDialog = new Map();
+function showSurprise(name) {
+  if(name === 'hearts') { hearts(40); $('#hint').textContent = 'Te quiero 3.000.000, mi amor ♡'; return; }
+  const dialog = document.getElementById(name);
+  focusBeforeDialog.set(name, document.activeElement); dialog.showModal();
+}
+ document.querySelectorAll('[data-surprise]').forEach(button => button.addEventListener('click', e => { e.stopPropagation(); showSurprise(button.dataset.surprise); }));
+ document.querySelectorAll('[data-close]').forEach(button => button.onclick = () => document.getElementById(button.dataset.close).close());
+ document.querySelectorAll('dialog').forEach(dialog => {
+   dialog.addEventListener('close', () => focusBeforeDialog.get(dialog.id)?.focus());
+   dialog.addEventListener('click', e => { if(e.target !== dialog) return; const r=dialog.getBoundingClientRect(); if(e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom) dialog.close(); });
+ });
+$('#rain').onclick = () => hearts(35);
+$('#letter-rain').onclick = () => hearts(35);
+$('#hug-hearts').onclick = () => hearts(35);
+
+const chocolateWords = [
+  'Me encantas, mi vida. Y cada día encuentro otra cosita tuya que me gusta.',
+  'Gracias por compartir tus días conmigo, amor. Hasta lo más simple lo haces bonito.',
+  'Quiero más tardes contigo, más risas y más abrazos de los nuestros.',
+  'Te quiero 3.000.000, mi amor. Y me sigo quedando corto.'
+];
+document.querySelectorAll('[data-chocolate]').forEach(chocolate => chocolate.onclick = () => {
+  chocolate.classList.add('tasted'); chocolate.textContent='♡';
+  $('#chocolate-message').textContent=chocolateWords[Number(chocolate.dataset.chocolate)];
+});
+const perfumeWords = [
+  'Mi vida, qué bonito haberte encontrado.',
+  'Con un mensajito tuyo ya me cambias el día, amor.',
+  'Estoy feliz contigo. De verdad, muchísimo.',
+  'Quiero que nos queden muchas cosas por vivir juntos.',
+  'Te mando un abrazo enorme, mi amor. De esos que duran un ratito más.'
+];
+let sprayIndex=0;
+$('#spray').onclick = () => {
+  $('#perfume-message').textContent=perfumeWords[sprayIndex++ % perfumeWords.length];
+  $('#spray').classList.remove('spritz'); void $('#spray').offsetWidth; $('#spray').classList.add('spritz'); hearts(5);
+};

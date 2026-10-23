@@ -1,0 +1,73 @@
+/* Los mismos siete regalos, ahora con cantos, capas y superficies elevadas. */
+.present,.present:hover,.present:focus-visible{filter:none;transform-style:preserve-3d}
+.present:before{content:'';position:absolute;left:3px;right:-3px;top:8px;bottom:-3px;border-radius:9px;background:#79546b35;filter:blur(4px);transform:translateZ(-3px);pointer-events:none}
+.present:focus-visible{outline:2px solid #e44b94}
+.present>small,.present-kitty>span:last-child{transform:translateZ(3px);pointer-events:none}
+.solid-model{display:block;position:relative;width:var(--model-w);height:var(--model-h);transform-style:preserve-3d}
+.solid-top,.solid-back{display:block;position:absolute;left:0;top:0;width:var(--model-w);height:var(--model-h);transform-style:preserve-3d}
+.solid-top{transform:translateZ(var(--model-d))}
+.solid-back{background:#bd6d95;border-radius:3px;box-shadow:0 3px 5px #8e476c55}
+.solid-edge{position:absolute;display:block;backface-visibility:visible;pointer-events:none;background:linear-gradient(#fff6f9,#dd9cbd);box-shadow:inset 0 1px 0 #fff9}
+.solid-front,.solid-rear{width:var(--model-w);height:var(--model-d);left:0;transform-origin:center top}
+.solid-front{top:var(--model-h);transform:translateZ(var(--model-d)) rotateX(-90deg)}
+.solid-rear{top:0;transform:rotateX(90deg)}
+.solid-left,.solid-right{width:var(--model-d);height:var(--model-h);top:0;transform-origin:left center;transform:translateZ(var(--model-d)) rotateY(90deg)}
+.solid-left{left:0}.solid-right{left:var(--model-w)}
+.book-model{transform:rotateX(-9deg);transform-origin:center bottom}
+.book-model .solid-back{background:#c12e76;box-shadow:0 0 0 1px #a42161}
+.book-model .solid-front,.book-model .solid-right{background:repeating-linear-gradient(90deg,#fff8ec 0,#fff8ec 1px,#d0abbc 1px,#d0abbc 1.5px);box-shadow:inset 1px 0 1px #fff,inset -1px 0 2px #9d6c8a88}
+.book-model .solid-left,.book-model .solid-rear{background:linear-gradient(90deg,#9c195a,#e45599 60%,#ae2466)}
+.book-cover{border:2px solid #ffdcf0;border-left:6px solid #c52574;border-radius:2px 4px 4px 2px;background:linear-gradient(120deg,#ffb3d8,#ed5ca1 60%,#df3f8a);box-shadow:inset 1px 1px 1px #fff9,inset -1px -1px 2px #b1276d66}
+.book-cover:after{content:'';position:absolute;inset:5px 4px 5px 8px;border:1px solid #ffe5f48a;border-radius:2px;pointer-events:none}
+.envelope-model{transform:rotateX(-7deg)}
+.envelope-model .solid-back{background:#e1bdcf;border-radius:2px}
+.envelope-model .solid-front,.envelope-model .solid-right{background:linear-gradient(90deg,#fffafc,#e7c4d7 70%,#b990a6)}
+.envelope-model .solid-left,.envelope-model .solid-rear{background:#f3d9e6}
+.envelope{width:76px;height:46px;background:linear-gradient(145deg,#fffefb,#f4e2ec);border:1px solid #c99ab3;box-shadow:inset 1px 1px 1px white,inset 0 -2px 3px #c19bb333}
+.envelope:before{border-color:#c796b0;background:linear-gradient(135deg,#fffdfb,#ead3e1);box-shadow:2px 2px 2px #a9769433;transform:rotate(45deg);top:-34px;z-index:1}
+.envelope:after{content:'';position:absolute;inset:0;background:linear-gradient(32deg,transparent 49%,#c498b033 50%,transparent 51%),linear-gradient(-32deg,transparent 49%,#c498b033 50%,transparent 51%);pointer-events:none}
+.envelope b{position:relative;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ffafd4,#dc4b8b 70%,#b42769);color:#fff1f8;font-size:10px;display:grid;place-items:center;width:17px;height:17px;box-shadow:0 2px 2px #8e426455,inset 0 1px 1px #ffe6f4;z-index:2;transform:translateZ(2px)}
+.chocolate-model{transform:rotate(7deg)}
+.chocolate-model .solid-back{background:#a93d71;box-shadow:0 2px 2px #7c3d5b66}
+.chocolate-model .solid-front{background:linear-gradient(#ffd2e7,#eea6c9 45%,#c76594);border-bottom:1px solid #a84f7d}
+.chocolate-model .solid-right{background:linear-gradient(90deg,#f7bdd8,#bb5d8c)}
+.chocolate-model .solid-left,.chocolate-model .solid-rear{background:#e09cbe}
+.chocolate-box{width:64px;height:51px;transform:none;transform-style:preserve-3d;border:4px solid #f5c2d9;border-radius:3px;background:#a96f86;padding:3px;gap:3px;box-shadow:inset 0 2px 3px #64374988,0 0 0 1px #be6f97}
+.chocolate-box i{position:relative;display:grid;place-items:center;font-size:16px;background:#e8c6a5;border:1px solid #d9b99f;transform:translateZ(4px);color:#854147;text-shadow:0 1px #4b232b,1px 2px #542730;box-shadow:0 2px 2px #5b2e3e77,inset 0 1px 1px #ffefcd}
+.chocolate-box i:before{content:'♥';position:absolute;color:#4a252c;transform:translateZ(-2px) translateY(2px)}
+.chocolate-box i:nth-child(2n){color:#a35e5b;text-shadow:0 1px #683437,1px 2px #683437}
+.perfume-model{margin:9px auto 0;transform:rotateX(-30deg);transform-origin:center bottom}
+.perfume-model .solid-back{background:linear-gradient(120deg,#ffcde6,#d788b3);border:1px solid #bc7297;border-radius:7px}
+.perfume-model .solid-left{background:linear-gradient(90deg,#fff2fa,#f1b0d3 45%,#bd779f);border:1px solid #ecc6da;border-radius:2px}
+.perfume-model .solid-right{background:linear-gradient(90deg,#f4d4e6,#ba6d97);border:1px solid #cc8daf;border-radius:2px}
+.perfume-model .solid-front{background:linear-gradient(#fff4fb,#d28eb4);border-bottom:2px solid #b8789f;border-radius:0 0 4px 4px}
+.perfume-model .solid-rear{background:#d997be}
+.perfume-model .perfume-bottle{width:43px;height:46px;margin:0;border:2px solid #e4a1c4;border-radius:7px;background:linear-gradient(100deg,#fffafaeb,#ffd4e9cc 25%,#f1accedd 70%,#ffe6f4);box-shadow:inset 3px 0 1px #fff9,inset -3px 0 2px #b9709a55,inset 0 -3px 1px #d091b855}
+.perfume-bottle i{box-shadow:1px 2px 2px #98426788,inset 0 2px 1px #ffddeb,inset -3px 0 2px #a9547c;transform:translateZ(3px)}
+.perfume-bottle i:after{content:'';position:absolute;left:1px;right:-2px;top:-4px;height:5px;background:linear-gradient(90deg,#d57a9f,#ffe2ef,#bd608b);transform:skewX(-20deg);border-radius:2px}
+.perfume-bottle b{background:#fff6f9ee;box-shadow:0 1px 1px #b36c9344;transform:translateZ(1px)}
+.big-perfume{perspective:500px;transform-style:preserve-3d}
+.big-perfume .perfume-model{margin:25px auto;transform:scale(2.8) rotateX(-12deg) rotateY(-13deg)}
+.big-perfume .perfume-bottle{transform:none}
+.toy-figure{position:relative;display:block;width:65px;height:65px;transform-style:preserve-3d;transform:rotateX(-35deg);transform-origin:center bottom}
+.present-kitty .toy-figure img{position:absolute;inset:0;width:65px;height:65px;object-fit:contain;pointer-events:none}
+.toy-front{transform:translateZ(8px);filter:drop-shadow(1px 1px 1px #a37b8e44)}
+.toy-side-back{transform:translateZ(0px);filter:brightness(.67) sepia(.1)}
+.toy-side-middle{transform:translateZ(4px);filter:brightness(.88)}
+.mini-bouquet{background:none;clip-path:none;transform-style:preserve-3d;transform:rotateX(-22deg);transform-origin:center bottom}
+.mini-bouquet:before,.mini-bouquet:after{content:'';position:absolute;inset:0;pointer-events:none}
+.mini-bouquet:before{background:linear-gradient(105deg,#c584a5,#ffe9f4 34%,#e1abc6 70%,#bd7399);clip-path:polygon(0 0,100% 0,68% 100%,37% 100%);transform:translateZ(1px)}
+.mini-bouquet:after{background:linear-gradient(115deg,#f6cee2,#fff4f9 50%,#cf91b0);clip-path:polygon(0 8%,55% 36%,68% 100%,37% 100%);transform:translateZ(7px);box-shadow:inset -1px 0 #b57396}
+.mini-bouquet i{font-size:39px;transform:translateZ(17px);text-shadow:1px 1px #a83d6b,2px 2px #bd4b7c,3px 3px 2px #8a4e6d55}
+.mini-bouquet i:nth-child(2){transform:translateZ(22px)}
+.mini-bouquet i:nth-child(3){transform:translateZ(29px);color:#ff8cbd;text-shadow:1px 1px #d65e96,2px 2px #c24983,3px 3px 2px #8a4e6d55}
+.mini-bouquet b{transform:translateZ(12px);background:linear-gradient(#ff95bd,#dc3d82,#9f285f);box-shadow:0 2px 2px #8a406277;z-index:2}
+.heart-model{position:relative;display:block;width:42px;height:38px;transform-style:preserve-3d}
+.heart-model i,.heart-model b{display:block;position:absolute;inset:0;font:33px/1 Georgia,serif;font-style:normal;color:#b51d5f;text-shadow:none}
+.heart-model i:first-child{transform:translateZ(0px)}
+.heart-model i:nth-child(2){transform:translateZ(3px);color:#ca286e}
+.heart-model i:nth-child(3){transform:translateZ(6px);color:#f44a91}
+.heart-model b{transform:translateZ(9px);background:linear-gradient(130deg,#ffb1d1,#f14d95 45%,#ce236c 85%);background-clip:text;-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 1px 0 #a92b67)}
+.heart-model b:after{content:'♥';position:absolute;inset:0;color:transparent;text-shadow:-1px -1px 0 #ffcee133;pointer-events:none}
+.chocolate-tray button{position:relative;box-shadow:0 6px 0 #66303b,0 9px 4px #8c48504d,inset 0 3px 4px #efb6b188,inset -3px -3px 7px #42232955;background:radial-gradient(ellipse at 35% 20%,#b97973,#8f5256 45%,#63343f)}
+.chocolate-tray button.tasted{box-shadow:inset 0 3px 5px #b9798c33}
