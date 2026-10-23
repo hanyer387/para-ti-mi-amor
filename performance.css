@@ -16,3 +16,17 @@
  .heart{text-shadow:none}
 }
 @media(max-width:650px) and (max-height:720px){.gift.opened{--camera-lift:75px}}
+/* Keep the depth tree intact: no separate scale layer or alpha transition. */
+.gift{scale:none!important;--camera-scale:.96;will-change:auto;transform-style:preserve-3d;transform:scale3d(var(--camera-scale),var(--camera-scale),var(--camera-scale)) translate3d(0,var(--camera-lift),0) rotateX(var(--view-x)) rotateY(var(--view-y))}
+.gift.opened{transform:scale3d(var(--camera-scale),var(--camera-scale),var(--camera-scale)) translate3d(0,var(--camera-lift),0) rotateX(var(--view-x)) rotateY(var(--view-y))}
+.floor-items{opacity:1;transition:none!important;visibility:hidden;transform-style:preserve-3d}
+.opened .floor-items{opacity:1;visibility:visible}
+.face,.inner-wall,.lid-top,.lid-inner{-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.toy-side-back,.toy-side-middle{opacity:1}
+@media(max-width:650px){.gift{--camera-scale:.95}
+ /* Gradients and solid edges keep depth while expensive moving shadows pause. */
+ .scene.interacting .box3d *,.scene.interacting .box3d *:before,.scene.interacting .box3d *:after{box-shadow:none!important;text-shadow:none!important}
+}
+@media(max-width:360px){.gift{--camera-scale:.76}}
+@media(max-width:650px) and (max-height:720px){.gift{--camera-scale:.83}}
+@media(max-width:360px) and (max-height:720px){.gift{--camera-scale:.72}}

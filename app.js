@@ -44,16 +44,19 @@ function hearts(count = 30) {
   }
 }
 
-let viewX = -22, viewY = -26;
+let viewX = -22, viewY = -26, manualLift = null;
 let transitionTimer, revealTimer, turning = false, suppressClickUntil = 0;
 const scene = $('#scene'), gift = $('#gift');
 function setView(x, y) {
-  viewX = Math.max(-70, Math.min(-18, x)); viewY = Math.max(-55, Math.min(55, y));
-  gift.style.transform = `translateY(var(--camera-lift)) rotateX(${viewX}deg) rotateY(${viewY}deg)`;
+  const minX = compactEffects ? (opening ? -57 : -40) : -70;
+  const maxX = -18;
+  const maxY = compactEffects ? 30 : 55;
+  viewX = Math.max(minX, Math.min(maxX, x)); viewY = Math.max(-maxY, Math.min(maxY, y));
+  gift.style.transform = `scale3d(var(--camera-scale),var(--camera-scale),var(--camera-scale)) translate3d(0,${manualLift === null ? 'var(--camera-lift)' : `${manualLift}px`},0) rotateX(${viewX}deg) rotateY(${viewY}deg)`;
 }
 function openGift() {
   if (opening || turning) return;
-  opening = true; turning = true; gift.classList.remove('manual-view'); gift.classList.add('opened');
+  opening = true; turning = true; manualLift = null; gift.classList.remove('manual-view'); gift.classList.add('opened');
   $('#lid').setAttribute('aria-expanded', 'true'); $('#lid').setAttribute('aria-label', 'Cerrar la tapa de la caja');
   $('#hint').textContent = 'Abriendo tu cajita, mi amor…';
   // Primero se levanta la tapa; luego la vista descubre el interior.
@@ -67,7 +70,7 @@ function openGift() {
 }
 function closeGift() {
   if (turning) return;
-  opening = false; gift.classList.remove('manual-view', 'opened'); $('#floor-items').inert = true;
+  opening = false; manualLift = null; gift.classList.remove('manual-view', 'opened'); $('#floor-items').inert = true;
   $('#lid').setAttribute('aria-expanded', 'false'); $('#lid').setAttribute('aria-label', 'Abrir la tapa de la caja');
   setView(-22,-26); $('#hint').textContent = 'Toca la tapa, mi amor. Hay algo bonito dentro.';
 }
@@ -101,14 +104,29 @@ function endGesture(e) {
   if(scene.hasPointerCapture(e.pointerId)) scene.releasePointerCapture(e.pointerId);
 }
 scene.addEventListener('pointerdown', e => {
-  if(e.button !== 0 || turning || gesture) return;
-  gesture = { id:e.pointerId, x:e.clientX, y:e.clientY, viewX, viewY, moved:false };
+  if(e.button !== 0 || gesture) return;
+  let startX = viewX, startY = viewY, lift = manualLift;
+  if(turning && typeof DOMMatrixReadOnly !== 'undefined') {
+    const m = new DOMMatrixReadOnly(getComputedStyle(gift).transform);
+    const scale = Math.hypot(m.m21,m.m22,m.m23) || 1;
+    startX = Math.atan2(m.m23,m.m22)*180/Math.PI;
+    startY = Math.atan2(m.m31,m.m11)*180/Math.PI;
+    lift = m.m42/scale;
+  }
+  gesture = { id:e.pointerId, x:e.clientX, y:e.clientY, viewX:startX, viewY:startY, lift, moved:false };
 });
 scene.addEventListener('pointermove', e => {
   if(!gesture || gesture.id !== e.pointerId) return;
   const dx=e.clientX-gesture.x, dy=e.clientY-gesture.y;
   if(!gesture.moved && Math.hypot(dx,dy)>9) {
-    gesture.moved=true; scene.setPointerCapture(e.pointerId);
+    gesture.moved=true;
+    if(turning) {
+      clearTimeout(revealTimer); clearTimeout(transitionTimer); turning=false;
+      manualLift=gesture.lift;
+      $('#floor-items').inert = !opening;
+      $('#hint').textContent = opening ? 'Toca cada regalito para descubrirlo. La tapa se cierra con otro toque.' : 'Toca la tapa, mi amor. Hay algo bonito dentro.';
+    }
+    scene.setPointerCapture(e.pointerId);
     gift.classList.add('dragging','manual-view'); scene.classList.add('interacting'); clearParticles();
   }
   if(gesture.moved) {
